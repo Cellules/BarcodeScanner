@@ -99,6 +99,7 @@
 - (UIImage*)buildReticleImage;
 - (void)shutterButtonPressed;
 - (IBAction)cancelButtonPressed:(id)sender;
+- (IBAction)scanButtonPressed:(id)sender;
 
 @end
 
@@ -294,6 +295,11 @@ parentViewController:(UIViewController*)parentViewController
 - (void)barcodeScanCancelled {
     [self barcodeScanDone];
     [self.plugin returnSuccess:@"" format:@"" cancelled:TRUE callback:self.callback];
+}
+
+//--------------------------------------------------------------------------
+- (void)barcodeScanStartRunning {
+    [self.viewController startCapturing];
 }
 
 //--------------------------------------------------------------------------
@@ -659,8 +665,6 @@ parentViewController:(UIViewController*)parentViewController
 
 //--------------------------------------------------------------------------
 - (void)viewDidAppear:(BOOL)animated {
-    [self startCapturing];
-
     [super viewDidAppear:animated];
 }
 
@@ -677,6 +681,11 @@ parentViewController:(UIViewController*)parentViewController
 //--------------------------------------------------------------------------
 - (IBAction)cancelButtonPressed:(id)sender {
     [self.processor performSelector:@selector(barcodeScanCancelled) withObject:nil afterDelay:0];
+}
+
+//--------------------------------------------------------------------------
+- (IBAction)scanButtonPressed:(id)sender {
+    [self.processor performSelector:@selector(barcodeScanStartRunning) withObject:nil afterDelay:0];
 }
 
 //--------------------------------------------------------------------------
@@ -717,6 +726,12 @@ parentViewController:(UIViewController*)parentViewController
                        action:@selector(cancelButtonPressed:)
                        ];
 
+    id scanButton = [[[UIBarButtonItem alloc] autorelease]
+                     initWithBarButtonSystemItem:UIBarButtonSystemItemCamera
+                     target:(id)self
+                     action:@selector(scanButtonPressed:)
+                     ];
+
     id flexSpace = [[[UIBarButtonItem alloc] autorelease]
                     initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
                     target:nil
@@ -730,9 +745,9 @@ parentViewController:(UIViewController*)parentViewController
                         action:@selector(shutterButtonPressed)
                         ];
 
-    toolbar.items = [NSArray arrayWithObjects:flexSpace,cancelButton,flexSpace,shutterButton,nil];
+    toolbar.items = [NSArray arrayWithObjects:cancelButton,flexSpace,scanButton,flexSpace,shutterButton,nil];
 #else
-    toolbar.items = [NSArray arrayWithObjects:flexSpace,cancelButton,flexSpace,nil];
+    toolbar.items = [NSArray arrayWithObjects:cancelButton,flexSpace,scanButton,flexSpace,nil];
 #endif
     bounds = overlayView.bounds;
 
